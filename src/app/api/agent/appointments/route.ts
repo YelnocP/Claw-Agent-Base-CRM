@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
         .select("google_calendar_id")
         .eq("name", assignedTo)
         .maybeSingle();
-      assignedCalendarId = data?.google_calendar_id || undefined;
+      const employee = (data as { google_calendar_id?: string | null } | null) ?? null;
+      assignedCalendarId = employee?.google_calendar_id || undefined;
     }
 
     const googleEventId = await createGoogleCalendarEvent({
@@ -124,20 +125,26 @@ export async function POST(request: NextRequest) {
       .select("first_name,last_name,email")
       .eq("id", contactId)
       .maybeSingle();
+    const contactRow =
+      (contact as {
+        first_name: string;
+        last_name: string | null;
+        email: string | null;
+      } | null) ?? null;
 
-    if (contact?.email) {
-      const fullName = [contact.first_name, contact.last_name]
+    if (contactRow?.email) {
+      const fullName = [contactRow.first_name, contactRow.last_name]
         .filter(Boolean)
         .join(" ");
       const template = appointmentConfirmationTemplate({
-        name: fullName || contact.first_name,
+        name: fullName || contactRow.first_name,
         service: clean(body.service) || title,
         dateTime: new Date(startTime).toLocaleString(),
         address: clean(body.address) || undefined,
       });
       void sendEmail({
-        toEmail: contact.email,
-        toName: fullName || contact.first_name,
+        toEmail: contactRow.email,
+        toName: fullName || contactRow.first_name,
         subject: template.subject,
         bodyHtml: template.bodyHtml,
         bodyText: template.bodyText,

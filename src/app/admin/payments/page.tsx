@@ -11,6 +11,18 @@ interface PaymentsPageProps {
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value || "";
 
+type PaymentRow = {
+  id: string;
+  amount: number;
+  vendor: string;
+  reason: string;
+  status: string;
+  created_at: string;
+  expires_at: string | null;
+  approval_token: string | null;
+  transaction_ref: string | null;
+};
+
 export default async function AdminPaymentsPage({ searchParams }: PaymentsPageProps) {
   const tab = first(searchParams?.tab) || "pending";
   const action = first(searchParams?.action);
@@ -23,8 +35,9 @@ export default async function AdminPaymentsPage({ searchParams }: PaymentsPagePr
       .select("*")
       .eq("id", id)
       .maybeSingle();
+    const paymentRow = (payment as PaymentRow | null) ?? null;
 
-    if (payment && payment.status === "pending") {
+    if (paymentRow && paymentRow.status === "pending") {
       const now = new Date().toISOString();
       if (action === "approve") {
         await supabase
@@ -67,6 +80,8 @@ export default async function AdminPaymentsPage({ searchParams }: PaymentsPagePr
       .order("created_at", { ascending: false })
       .limit(300),
   ]);
+  const pendingRows = (pending ?? []) as PaymentRow[];
+  const completedRows = (completed ?? []) as PaymentRow[];
 
   return (
     <div className="space-y-4">
@@ -94,7 +109,7 @@ export default async function AdminPaymentsPage({ searchParams }: PaymentsPagePr
 
       {tab === "pending" ? (
         <div className="grid gap-4 md:grid-cols-2">
-          {(pending ?? []).map((payment) => (
+          {pendingRows.map((payment) => (
             <div key={payment.id} className="space-y-2">
               <PaymentRequestCard
                 id={payment.id}
@@ -119,7 +134,7 @@ export default async function AdminPaymentsPage({ searchParams }: PaymentsPagePr
               </div>
             </div>
           ))}
-          {(pending ?? []).length === 0 ? (
+          {pendingRows.length === 0 ? (
             <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
               No pending payment requests.
             </div>
@@ -139,7 +154,7 @@ export default async function AdminPaymentsPage({ searchParams }: PaymentsPagePr
               </tr>
             </thead>
             <tbody>
-              {(completed ?? []).map((payment) => (
+              {completedRows.map((payment) => (
                 <tr key={payment.id} className="border-t border-slate-100">
                   <td className="px-4 py-3">
                     {new Date(payment.created_at).toLocaleString()}
@@ -153,7 +168,7 @@ export default async function AdminPaymentsPage({ searchParams }: PaymentsPagePr
                   </td>
                 </tr>
               ))}
-              {(completed ?? []).length === 0 ? (
+              {completedRows.length === 0 ? (
                 <tr>
                   <td className="px-4 py-6 text-sm text-slate-600" colSpan={6}>
                     No completed transactions yet.

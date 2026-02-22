@@ -3,6 +3,12 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { verifyPaymentApprovalSignature } from "@/lib/payment-approval";
 import { writeAgentLog } from "@/lib/agent-log";
 
+type PaymentWebhookRow = {
+  id: string;
+  status: string;
+  expires_at: string | null;
+};
+
 const html = (title: string, message: string, success = true) => `<!doctype html>
 <html lang="en">
   <head>
@@ -57,8 +63,9 @@ export async function GET(request: NextRequest) {
       .select("*")
       .eq("approval_token", token)
       .maybeSingle();
+    const paymentRow = (payment as PaymentWebhookRow | null) ?? null;
 
-    if (error || !payment) {
+    if (error || !paymentRow) {
       return new NextResponse(
         html(
           "Request not found",
@@ -72,7 +79,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (payment.status !== "pending") {
+    if (paymentRow.status !== "pending") {
       return new NextResponse(
         html(
           "Already processed",
@@ -86,11 +93,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (payment.expires_at && new Date(payment.expires_at) <= new Date()) {
+    if (paymentRow.expires_at && new Date(paymentRow.expires_at) <= new Date()) {
       await supabase
         .from("payment_requests")
         .update({ status: "expired", expires_at: new Date().toISOString() })
-        .eq("id", payment.id);
+        .eq("id", paymentRow.id);
       return new NextResponse(
         html("Link expired", "This approval link has expired.", false),
         {
@@ -109,17 +116,17 @@ export async function GET(request: NextRequest) {
     const { error: updateError } = await supabase
       .from("payment_requests")
       .update(updatePayload)
-      .eq("id", payment.id);
+      .eq("id", paymentRow.id);
     if (updateError) throw updateError;
 
     await writeAgentLog({
       action: action === "approve" ? "payment_approved" : "payment_denied",
       entityType: "payment",
-      entityId: payment.id as string,
+      entityId: paymentRow.id,
       description:
         action === "approve"
-          ? `Payment request ${payment.id} approved by owner`
-          : `Payment request ${payment.id} denied by owner`,
+          ? `Payment request ${paymentRow.id} approved by owner`
+          : `Payment request ${paymentRow.id} denied by owner`,
       metadata: { tokenUsed: true },
       status: "success",
     });

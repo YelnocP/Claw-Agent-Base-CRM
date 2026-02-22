@@ -8,6 +8,29 @@ interface ContactsPageProps {
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value || "";
 
+type ContactRow = {
+  id: string;
+  first_name: string;
+  last_name: string | null;
+  phone: string | null;
+  email: string | null;
+  status: string;
+  notes: string | null;
+};
+
+type LeadHistoryRow = {
+  id: string;
+  service_needed: string | null;
+  status: string;
+};
+
+type AppointmentHistoryRow = {
+  id: string;
+  title: string;
+  start_time: string;
+  status: string;
+};
+
 export default async function AdminContactsPage({ searchParams }: ContactsPageProps) {
   const search = first(searchParams?.search);
   const contactId = first(searchParams?.contactId);
@@ -26,6 +49,7 @@ export default async function AdminContactsPage({ searchParams }: ContactsPagePr
   }
 
   const { data: contacts } = await contactsQuery;
+  const contactRows = (contacts ?? []) as ContactRow[];
 
   const selectedContact = contactId
     ? await supabase.from("contacts").select("*").eq("id", contactId).maybeSingle()
@@ -55,6 +79,12 @@ export default async function AdminContactsPage({ searchParams }: ContactsPagePr
           .order("created_at", { ascending: false }),
       ])
     : [null, null, null, null];
+
+  const selected = (selectedContact?.data as ContactRow | null) ?? null;
+  const leadRows = ((leads?.data ?? []) as LeadHistoryRow[]) ?? [];
+  const appointmentRows = ((appointments?.data ?? []) as AppointmentHistoryRow[]) ?? [];
+  const jobRows = (jobs?.data ?? []) as Array<Record<string, unknown>>;
+  const emailRows = (emails?.data ?? []) as Array<Record<string, unknown>>;
 
   return (
     <div className="space-y-6">
@@ -86,7 +116,7 @@ export default async function AdminContactsPage({ searchParams }: ContactsPagePr
             <h2 className="font-semibold text-brand-textDark">All Contacts</h2>
           </div>
           <div className="max-h-[560px] overflow-y-auto">
-            {(contacts ?? []).map((contact) => (
+            {contactRows.map((contact) => (
               <Link
                 key={contact.id}
                 href={`/admin/contacts?contactId=${contact.id}${search ? `&search=${encodeURIComponent(search)}` : ""}`}
@@ -100,14 +130,14 @@ export default async function AdminContactsPage({ searchParams }: ContactsPagePr
                 <p className="text-xs text-slate-500">{contact.phone || contact.email || "—"}</p>
               </Link>
             ))}
-            {(contacts ?? []).length === 0 ? (
+            {contactRows.length === 0 ? (
               <p className="p-4 text-sm text-slate-600">No contacts found.</p>
             ) : null}
           </div>
         </section>
 
         <section className="space-y-4">
-          {!selectedContact?.data ? (
+          {!selected ? (
             <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
               Select a contact to view profile details.
             </div>
@@ -115,49 +145,49 @@ export default async function AdminContactsPage({ searchParams }: ContactsPagePr
             <>
               <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h2 className="text-lg font-semibold text-brand-textDark">
-                  {[selectedContact.data.first_name, selectedContact.data.last_name]
+                  {[selected.first_name, selected.last_name]
                     .filter(Boolean)
                     .join(" ")}
                 </h2>
-                <p className="text-sm text-slate-600">{selectedContact.data.email || "No email"}</p>
-                <p className="text-sm text-slate-600">{selectedContact.data.phone || "No phone"}</p>
+                <p className="text-sm text-slate-600">{selected.email || "No email"}</p>
+                <p className="text-sm text-slate-600">{selected.phone || "No phone"}</p>
                 <p className="mt-2 text-xs text-slate-500">
-                  Status: {selectedContact.data.status}
+                  Status: {selected.status}
                 </p>
-                {selectedContact.data.notes ? (
-                  <p className="mt-2 text-sm text-slate-700">{selectedContact.data.notes}</p>
+                {selected.notes ? (
+                  <p className="mt-2 text-sm text-slate-700">{selected.notes}</p>
                 ) : null}
               </article>
 
               <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="font-semibold text-brand-textDark">Lead History</h3>
                 <ul className="mt-2 space-y-2 text-sm text-slate-700">
-                  {(leads?.data ?? []).map((lead) => (
+                  {leadRows.map((lead) => (
                     <li key={lead.id} className="rounded border border-slate-100 p-2">
                       {lead.service_needed || "General inquiry"} — {lead.status}
                     </li>
                   ))}
-                  {(leads?.data ?? []).length === 0 ? <li>No leads.</li> : null}
+                  {leadRows.length === 0 ? <li>No leads.</li> : null}
                 </ul>
               </article>
 
               <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="font-semibold text-brand-textDark">Appointments</h3>
                 <ul className="mt-2 space-y-2 text-sm text-slate-700">
-                  {(appointments?.data ?? []).map((appointment) => (
+                  {appointmentRows.map((appointment) => (
                     <li key={appointment.id} className="rounded border border-slate-100 p-2">
                       {appointment.title} — {new Date(appointment.start_time).toLocaleString()} (
                       {appointment.status})
                     </li>
                   ))}
-                  {(appointments?.data ?? []).length === 0 ? <li>No appointments.</li> : null}
+                  {appointmentRows.length === 0 ? <li>No appointments.</li> : null}
                 </ul>
               </article>
 
               <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="font-semibold text-brand-textDark">Jobs & Emails</h3>
                 <p className="mt-2 text-sm text-slate-700">
-                  Jobs: {(jobs?.data ?? []).length} • Emails: {(emails?.data ?? []).length}
+                  Jobs: {jobRows.length} • Emails: {emailRows.length}
                 </p>
               </article>
             </>

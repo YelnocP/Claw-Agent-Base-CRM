@@ -1,6 +1,4 @@
-import { createBrowserClient, createServerClient } from "@supabase/ssr";
-import type { CookieOptions } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createBrowserClient } from "@supabase/ssr";
 import { publicConfig } from "@/lib/config";
 
 const getClientConfig = () => {
@@ -19,26 +17,4 @@ const getClientConfig = () => {
 export const createSupabaseBrowserClient = () => {
   const { supabaseUrl, supabaseAnonKey } = getClientConfig();
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
-};
-
-export const createSupabaseServerClient = () => {
-  const cookieStore = cookies();
-  const { supabaseUrl, supabaseAnonKey } = getClientConfig();
-
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          try {
-            cookieStore.set(name, value, options as CookieOptions);
-          } catch {
-            // Server Components can read cookies but cannot always write them.
-          }
-        });
-      },
-    },
-  });
 };

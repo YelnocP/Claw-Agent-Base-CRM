@@ -1,7 +1,24 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getServerConfig, publicConfig } from "@/lib/config";
 
-let adminClient: ReturnType<typeof createClient> | null = null;
+type GenericTable = {
+  Row: Record<string, unknown>;
+  Insert: Record<string, unknown>;
+  Update: Record<string, unknown>;
+  Relationships: never[];
+};
+
+type GenericDatabase = {
+  public: {
+    Tables: Record<string, GenericTable>;
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, string>;
+    CompositeTypes: Record<string, never>;
+  };
+};
+
+let adminClient: SupabaseClient<GenericDatabase> | null = null;
 
 export const getSupabaseAdmin = () => {
   if (adminClient) {
@@ -13,12 +30,16 @@ export const getSupabaseAdmin = () => {
   }
 
   const { supabaseServiceRoleKey } = getServerConfig();
-  adminClient = createClient(publicConfig.supabaseUrl, supabaseServiceRoleKey, {
+  adminClient = createClient<GenericDatabase>(
+    publicConfig.supabaseUrl,
+    supabaseServiceRoleKey,
+    {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-  });
+    },
+  );
 
   return adminClient;
 };

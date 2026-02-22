@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { Sidebar } from "@/components/admin/Sidebar";
 import { SignOutButton } from "@/components/admin/SignOutButton";
+
+export const dynamic = "force-dynamic";
 
 interface AdminLayoutProps {
   children: ReactNode;

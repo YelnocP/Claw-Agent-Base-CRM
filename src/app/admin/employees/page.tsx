@@ -1,16 +1,33 @@
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
+type EmployeeRow = {
+  id: string;
+  name: string;
+  role: string | null;
+  active: boolean;
+  email: string | null;
+  phone: string | null;
+  google_calendar_id: string | null;
+};
+
+type EmployeeAppointmentRow = {
+  id: string;
+  title: string;
+  start_time: string;
+};
+
 export default async function AdminEmployeesPage() {
   const supabase = getSupabaseAdmin();
   const { data: employees } = await supabase
     .from("employees")
     .select("*")
     .order("name", { ascending: true });
+  const employeeRows = (employees ?? []) as EmployeeRow[];
 
   const today = new Date().toISOString();
 
   const employeeDetails = await Promise.all(
-    (employees ?? []).map(async (employee) => {
+    employeeRows.map(async (employee) => {
       const [jobsResult, appointmentsResult] = await Promise.all([
         supabase
           .from("jobs")
@@ -28,7 +45,8 @@ export default async function AdminEmployeesPage() {
       return {
         ...employee,
         jobCount: jobsResult.count ?? 0,
-        upcomingAppointments: appointmentsResult.data ?? [],
+        upcomingAppointments:
+          ((appointmentsResult.data ?? []) as EmployeeAppointmentRow[]) ?? [],
       };
     }),
   );

@@ -19,6 +19,26 @@ interface LeadsPageProps {
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value || "";
 
+type LeadRow = {
+  id: string;
+  created_at: string;
+  assigned_to: string | null;
+  service_needed: string | null;
+  source: string | null;
+  owner_notes: string | null;
+  agent_notes: string | null;
+  message: string | null;
+  status: string;
+  contacts:
+    | {
+        first_name: string | null;
+        last_name: string | null;
+        phone: string | null;
+        email: string | null;
+      }
+    | null;
+};
+
 export default async function AdminLeadsPage({ searchParams }: LeadsPageProps) {
   const status = first(searchParams?.status);
   const source = first(searchParams?.source);
@@ -35,6 +55,7 @@ export default async function AdminLeadsPage({ searchParams }: LeadsPageProps) {
   if (service) query = query.eq("service_needed", service);
 
   const { data: leads } = await query;
+  const leadRows = (leads ?? []) as LeadRow[];
 
   return (
     <div className="space-y-4">
@@ -95,7 +116,7 @@ export default async function AdminLeadsPage({ searchParams }: LeadsPageProps) {
             </tr>
           </thead>
           <tbody>
-            {(leads ?? []).map((lead) => {
+            {leadRows.map((lead) => {
               const contact = Array.isArray(lead.contacts) ? lead.contacts[0] : lead.contacts;
               return (
                 <tr key={lead.id} className="border-t border-slate-100 align-top">

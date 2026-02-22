@@ -11,6 +11,16 @@ const first = (value: string | string[] | undefined) =>
 
 const toDateKey = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 
+type AppointmentRow = {
+  id: string;
+  title: string;
+  start_time: string;
+  assigned_to: string | null;
+  status: string;
+  google_event_id: string | null;
+  contacts: { first_name: string | null; last_name: string | null } | null;
+};
+
 export default async function AdminAppointmentsPage({
   searchParams,
 }: AppointmentsPageProps) {
@@ -22,7 +32,9 @@ export default async function AdminAppointmentsPage({
     .order("start_time", { ascending: true })
     .limit(200);
 
-  const groupedByDate = (appointments ?? []).reduce<Record<string, typeof appointments>>(
+  const appointmentRows = (appointments ?? []) as AppointmentRow[];
+
+  const groupedByDate = appointmentRows.reduce<Record<string, AppointmentRow[]>>(
     (acc, appointment) => {
       const key = toDateKey(appointment.start_time);
       if (!acc[key]) acc[key] = [];
@@ -95,7 +107,7 @@ export default async function AdminAppointmentsPage({
               </tr>
             </thead>
             <tbody>
-              {(appointments ?? []).map((appointment) => (
+              {appointmentRows.map((appointment) => (
                 <tr key={appointment.id} className="border-t border-slate-100">
                   <td className="px-4 py-3">
                     {new Date(appointment.start_time).toLocaleString()}
@@ -115,7 +127,7 @@ export default async function AdminAppointmentsPage({
                   </td>
                 </tr>
               ))}
-              {(appointments ?? []).length === 0 ? (
+              {appointmentRows.length === 0 ? (
                 <tr>
                   <td className="px-4 py-6 text-sm text-slate-600" colSpan={6}>
                     No appointments available.

@@ -10,6 +10,24 @@ const startOfToday = () => {
   return date;
 };
 
+type DashboardLeadRow = {
+  id: string;
+  service_needed: string | null;
+  source: string | null;
+  status: string;
+  created_at: string;
+  contacts: { first_name: string | null; last_name: string | null } | null;
+};
+
+type DashboardAppointmentRow = {
+  id: string;
+  title: string;
+  start_time: string;
+  assigned_to: string | null;
+  status: string;
+  contacts: { first_name: string | null; last_name: string | null } | null;
+};
+
 export default async function AdminDashboardPage() {
   const supabase = getSupabaseAdmin();
 
@@ -69,8 +87,9 @@ export default async function AdminDashboardPage() {
   const openJobs = openJobsResult.count ?? 0;
   const pendingPayments = pendingPaymentsResult.count ?? 0;
 
-  const recentLeads = recentLeadsResult.data ?? [];
-  const upcomingAppointments = upcomingAppointmentsResult.data ?? [];
+  const recentLeads = (recentLeadsResult.data ?? []) as DashboardLeadRow[];
+  const upcomingAppointments =
+    (upcomingAppointmentsResult.data ?? []) as DashboardAppointmentRow[];
 
   return (
     <div className="space-y-6">

@@ -55,7 +55,8 @@ export async function POST(request: Request) {
         .select("id")
         .eq("email", email)
         .maybeSingle();
-      contactId = data?.id ?? null;
+      const existingContact = (data as { id: string } | null) ?? null;
+      contactId = existingContact?.id ?? null;
     }
     if (!contactId && phone) {
       const { data } = await supabase
@@ -63,7 +64,8 @@ export async function POST(request: Request) {
         .select("id")
         .eq("phone", phone)
         .maybeSingle();
-      contactId = data?.id ?? null;
+      const existingContact = (data as { id: string } | null) ?? null;
+      contactId = existingContact?.id ?? null;
     }
 
     if (contactId) {
@@ -109,6 +111,7 @@ export async function POST(request: Request) {
       .single();
 
     if (leadError) throw leadError;
+    const leadRow = lead as { id: string };
 
     const { adminEmail } = getServerConfig();
     const ownerEmail = adminEmail || publicConfig.businessEmail;
@@ -146,7 +149,7 @@ export async function POST(request: Request) {
     await writeAgentLog({
       action: "contact_form_submission",
       entityType: "lead",
-      entityId: lead.id as string,
+      entityId: leadRow.id,
       description: `Contact form submitted for ${serviceNeeded}`,
       metadata: {
         contactId,
@@ -157,7 +160,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      leadId: lead.id,
+      leadId: leadRow.id,
     });
   } catch (error) {
     console.error("Contact form error", error);

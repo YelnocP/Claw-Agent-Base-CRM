@@ -49,7 +49,17 @@ export default async function AgentLogPage({ searchParams }: AgentLogPageProps) 
   }
 
   const { data: logs } = await query;
-  const csvData = encodeURIComponent(toCsv((logs ?? []) as Array<Record<string, unknown>>));
+  const logRows = (logs ?? []) as Array<{
+    id: string;
+    created_at: string;
+    action: string;
+    entity_type: string | null;
+    description: string;
+    status: string;
+  }>;
+  const csvData = encodeURIComponent(
+    toCsv(logRows as Array<Record<string, unknown>>),
+  );
 
   return (
     <div className="space-y-4">
@@ -103,7 +113,7 @@ export default async function AgentLogPage({ searchParams }: AgentLogPageProps) 
             </tr>
           </thead>
           <tbody>
-            {(logs ?? []).map((log) => (
+            {logRows.map((log) => (
               <AgentLogEntry
                 key={log.id}
                 createdAt={log.created_at}
@@ -113,7 +123,7 @@ export default async function AgentLogPage({ searchParams }: AgentLogPageProps) 
                 status={log.status}
               />
             ))}
-            {(logs ?? []).length === 0 ? (
+            {logRows.length === 0 ? (
               <tr>
                 <td className="px-4 py-6 text-sm text-slate-600" colSpan={5}>
                   No agent logs found for the selected filters.

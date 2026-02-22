@@ -12,6 +12,18 @@ interface EmailsPageProps {
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value || "";
 
+type EmailRow = {
+  id: string;
+  to_email: string;
+  to_name: string | null;
+  subject: string;
+  body_html: string;
+  body_text: string | null;
+  status: string;
+  created_at: string;
+  sent_at: string | null;
+};
+
 export default async function AdminEmailsPage({ searchParams }: EmailsPageProps) {
   const tab = first(searchParams?.tab) || "pending";
   const action = first(searchParams?.action);
@@ -25,8 +37,9 @@ export default async function AdminEmailsPage({ searchParams }: EmailsPageProps)
         .select("*")
         .eq("id", id)
         .maybeSingle();
+      const selectedEmail = (emailRecord as EmailRow | null) ?? null;
 
-      if (emailRecord && emailRecord.status === "pending_approval") {
+      if (selectedEmail && selectedEmail.status === "pending_approval") {
         await supabase
           .from("email_queue")
           .update({ status: "approved", approved_at: new Date().toISOString() })
@@ -34,11 +47,11 @@ export default async function AdminEmailsPage({ searchParams }: EmailsPageProps)
 
         try {
           await sendEmail({
-            toEmail: emailRecord.to_email,
-            toName: emailRecord.to_name || undefined,
-            subject: emailRecord.subject,
-            bodyHtml: emailRecord.body_html,
-            bodyText: emailRecord.body_text || undefined,
+            toEmail: selectedEmail.to_email,
+            toName: selectedEmail.to_name || undefined,
+            subject: selectedEmail.subject,
+            bodyHtml: selectedEmail.body_html,
+            bodyText: selectedEmail.body_text || undefined,
           });
           await supabase
             .from("email_queue")
@@ -95,7 +108,9 @@ export default async function AdminEmailsPage({ searchParams }: EmailsPageProps)
     sentQuery,
   ]);
 
-  const activeRows = tab === "sent" ? sentEmails ?? [] : pendingEmails ?? [];
+  const activeRows = (
+    tab === "sent" ? sentEmails ?? [] : pendingEmails ?? []
+  ) as EmailRow[];
 
   return (
     <div className="space-y-4">

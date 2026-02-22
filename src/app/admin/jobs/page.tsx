@@ -16,14 +16,27 @@ const statusLabel: Record<(typeof statuses)[number], string> = {
   paid: "Paid",
 };
 
+type JobRow = {
+  id: string;
+  title: string;
+  status: string;
+  service: string | null;
+  assigned_to: string | null;
+  scheduled_date: string | null;
+  invoice_amount: number | null;
+  paid_amount: number | null;
+  contacts: { first_name: string | null; last_name: string | null } | null;
+};
+
 export default async function AdminJobsPage() {
   const { data: jobs } = await getSupabaseAdmin()
     .from("jobs")
     .select("*, contacts(first_name,last_name)")
     .order("created_at", { ascending: false });
+  const jobRows = (jobs ?? []) as JobRow[];
 
-  const grouped = statuses.reduce<Record<string, typeof jobs>>((acc, status) => {
-    acc[status] = (jobs ?? []).filter((job) => job.status === status);
+  const grouped = statuses.reduce<Record<string, JobRow[]>>((acc, status) => {
+    acc[status] = jobRows.filter((job) => job.status === status);
     return acc;
   }, {});
 
