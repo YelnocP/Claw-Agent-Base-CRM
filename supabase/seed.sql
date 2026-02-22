@@ -1,58 +1,54 @@
--- OpenClaw Base Platform Seed Data
--- Optional demo records for local development.
+-- Alpine Outdoor Living — Seed Data
+-- Demo records for development and initial launch.
 
 insert into public.contacts (first_name, last_name, phone, email, source, notes, tags)
 values
-  ('Jamie', 'Parker', '(555) 010-1000', 'jamie@example.com', 'website_form', 'Prefers morning appointments.', array['vip']),
-  ('Morgan', 'Lee', '(555) 010-2000', 'morgan@example.com', 'referral', 'Interested in recurring service.', array['repeat_customer'])
+  ('Sarah', 'Mitchell', '(217) 555-1200', 'sarah.mitchell@example.com', 'website_form', 'Interested in backyard patio with fire pit. Has large yard.', array['new_lead']),
+  ('Dave', 'Hernandez', '(217) 555-3400', 'dave.hernandez@example.com', 'referral', 'Referred by a neighbor. Wants a water feature for front yard.', array['referral']),
+  ('Lisa', 'Thompson', '(217) 555-5600', 'lisa.thompson@example.com', 'instagram', 'Saw our portfolio on Instagram. Interested in full outdoor kitchen.', array['high_value'])
 on conflict do nothing;
 
 insert into public.leads (contact_id, service_needed, preferred_date, message, status, source, assigned_to)
-select c.id, 'Lawn Mowing', 'Next Tuesday', 'Looking for bi-weekly mowing service.', 'new', 'website_form', 'owner'
-from public.contacts c
-where c.email = 'jamie@example.com'
-limit 1;
+select c.id, 'Patios', 'Next week', 'We want a large flagstone patio with a built-in fire pit area. Budget around $15-20k.', 'new', 'website_form', 'Austin'
+from public.contacts c where c.email = 'sarah.mitchell@example.com' limit 1;
 
 insert into public.leads (contact_id, service_needed, preferred_date, message, status, source, assigned_to)
-select c.id, 'Irrigation Repair', 'This Friday', 'Sprinkler zone 2 is not working.', 'contacted', 'referral', 'owner'
-from public.contacts c
-where c.email = 'morgan@example.com'
-limit 1;
+select c.id, 'Water Features', 'Flexible', 'Looking for a pondless waterfall in the front yard. Want something natural-looking.', 'contacted', 'referral', 'Austin'
+from public.contacts c where c.email = 'dave.hernandez@example.com' limit 1;
+
+insert into public.leads (contact_id, service_needed, preferred_date, message, status, source, assigned_to)
+select c.id, 'Outdoor Kitchens', 'Spring 2026', 'Full outdoor kitchen — grill, countertop, sink, mini fridge. Want to see a design.', 'quoted', 'instagram', 'Austin'
+from public.contacts c where c.email = 'lisa.thompson@example.com' limit 1;
 
 insert into public.appointments (contact_id, title, start_time, end_time, address, service, assigned_to, status)
 select c.id,
-       'Lawn Mowing — 123 Main St',
-       now() + interval '2 day',
-       now() + interval '2 day 1 hour',
-       '123 Main St',
-       'Lawn Mowing',
-       'Crew A',
+       'Site Visit — Patio & Fire Pit',
+       now() + interval '3 day',
+       now() + interval '3 day 1 hour',
+       '1420 Meadowbrook Ln, Springfield, IL',
+       'Patios',
+       'Austin',
        'scheduled'
-from public.contacts c
-where c.email = 'jamie@example.com'
-limit 1;
+from public.contacts c where c.email = 'sarah.mitchell@example.com' limit 1;
 
 insert into public.jobs (contact_id, title, status, service, assigned_to, scheduled_date, invoice_amount)
 select c.id,
-       'Front Yard Cleanup',
+       'Front Yard Pondless Waterfall — Design & Build',
        'pending',
-       'Cleanup',
-       'Crew A',
-       current_date + 3,
-       180.00
-from public.contacts c
-where c.email = 'morgan@example.com'
-limit 1;
+       'Water Features',
+       'Austin',
+       current_date + 14,
+       8500.00
+from public.contacts c where c.email = 'dave.hernandez@example.com' limit 1;
 
 insert into public.employees (name, phone, email, role, active)
 values
-  ('Alex Rivera', '(555) 010-3000', 'alex@example.com', 'Crew Lead', true),
-  ('Casey Brooks', '(555) 010-4000', 'casey@example.com', 'Technician', true)
+  ('Austin Schiff', '(217) 503-0407', 'alpineoutdooragent@gmail.com', 'Owner', true)
 on conflict do nothing;
 
 insert into public.reviews (customer_name, service, quote, rating, review_date, source, published)
 values
-  ('Chris M.', 'Lawn Mowing', 'Fast, professional, and consistently excellent work.', 5, current_date - 14, 'Google', true),
-  ('Taylor R.', 'Irrigation Repair', 'They diagnosed and fixed the issue the same day.', 5, current_date - 7, 'Website', true),
-  ('Jordan K.', 'Seasonal Cleanup', 'Great communication and clean results.', 4, current_date - 3, 'Referral', true)
+  ('Mike R.', 'Water Features', 'Austin built an incredible pondless waterfall in our backyard. The craftsmanship is outstanding — it looks completely natural. Highly recommend Alpine Outdoor Living.', 5, current_date - 30, 'Google', true),
+  ('Jennifer S.', 'Patios', 'We had a large paver patio installed with a built-in fire pit. The attention to detail was amazing and the project was completed on time. Love spending evenings out there now.', 5, current_date - 14, 'Google', true),
+  ('Tom & Karen B.', 'Fire Pits', 'Alpine transformed our boring backyard into an outdoor living space we use every weekend. The fire pit is the centerpiece — great design and solid build quality.', 5, current_date - 7, 'Facebook', true)
 on conflict do nothing;
