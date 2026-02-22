@@ -1,13 +1,19 @@
 import { SiteShell } from "@/components/website/SiteShell";
 import { ContactForm } from "@/components/website/ContactForm";
 import { publicConfig } from "@/lib/config";
+import { PageHeroBanner } from "@/components/website/PageHeroBanner";
 
 export default function ContactPage() {
   return (
     <SiteShell>
-      <section className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-5 sm:px-6">
+      <PageHeroBanner
+        slot="contactHero"
+        title="Contact & Booking"
+        subtitle="Send your details and we will follow up quickly to schedule service."
+      />
+      <section className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:grid-cols-5 sm:px-6 sm:py-10">
         <div className="sm:col-span-2">
-          <h1 className="text-3xl font-bold text-brand-textDark">Contact & Booking</h1>
+          <h1 className="text-2xl font-bold text-brand-textDark sm:text-3xl">Contact Details</h1>
           <p className="mt-3 text-sm text-slate-600">{publicConfig.businessDescription}</p>
 
           <div className="mt-6 space-y-2 rounded-xl border border-slate-200 bg-brand-bgLight p-4 text-sm text-slate-700">

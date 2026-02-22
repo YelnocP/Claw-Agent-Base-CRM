@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { publicConfig } from "@/lib/config";
@@ -21,14 +22,16 @@ export function Navbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-3">
           {!logoError ? (
-            <img
+            <Image
               src="/logo.png"
               alt={`${publicConfig.businessName} logo`}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded bg-white object-cover"
               onError={() => setLogoError(true)}
             />
           ) : (
-            <div className="rounded bg-white/15 px-2 py-1 text-sm font-bold">
+            <div className="max-w-[60vw] truncate rounded bg-white/15 px-2 py-1 text-sm font-bold">
               {publicConfig.businessName}
             </div>
           )}

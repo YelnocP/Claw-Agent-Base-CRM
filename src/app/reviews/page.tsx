@@ -2,6 +2,7 @@ import { SiteShell } from "@/components/website/SiteShell";
 import { ReviewsSection } from "@/components/website/ReviewsSection";
 import { getPublishedReviews } from "@/lib/public-data";
 import { publicConfig } from "@/lib/config";
+import { PageHeroBanner } from "@/components/website/PageHeroBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -10,12 +11,11 @@ export default async function ReviewsPage() {
 
   return (
     <SiteShell>
-      <section className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-        <h1 className="text-3xl font-bold text-brand-textDark">Client Reviews</h1>
-        <p className="mt-2 text-slate-600">
-          Real feedback from customers we have served.
-        </p>
-      </section>
+      <PageHeroBanner
+        slot="reviewsHero"
+        title="Client Reviews"
+        subtitle="Real feedback from customers we have served."
+      />
       <ReviewsSection
         reviews={reviews.map((review) => ({
           quote: review.quote,

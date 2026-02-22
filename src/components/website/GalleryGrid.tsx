@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Lightbox from "yet-another-react-lightbox";
@@ -48,15 +49,20 @@ export function GalleryGrid({ images, previewOnly = false }: GalleryGridProps) {
         {displayImages.map((image, index) => (
           <button
             key={`${image.name}-${index}`}
-            className="overflow-hidden rounded-lg border border-slate-200"
+            className="relative overflow-hidden rounded-lg border border-slate-200"
             onClick={() => setOpenIndex(index)}
             aria-label={`Open image ${image.name}`}
           >
-            <img
-              src={image.url}
-              alt={image.name}
-              className="h-44 w-full object-cover transition hover:scale-105"
-            />
+            <div className="relative h-44 w-full">
+              <Image
+                src={image.url}
+                alt={image.name}
+                fill
+                unoptimized
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover transition hover:scale-105"
+              />
+            </div>
           </button>
         ))}
       </div>

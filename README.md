@@ -54,6 +54,57 @@ Then open `http://localhost:3000`.
     └── types/index.ts
 ```
 
+## Responsive Support (Desktop to Phone)
+
+The public website is implemented mobile-first and scales through standard breakpoints:
+
+- Mobile-first layouts (`px-4`, stacked sections, vertical flow)
+- Tablet/desktop expansion via `sm`, `md`, `lg` grid breakpoints
+- Responsive navigation with hamburger menu on small screens
+- Overflow-safe data tables in CRM via horizontal scrolling containers
+- Responsive image handling using separate desktop and mobile hero assets
+
+If you run `npm run dev`, you can verify across viewports in browser dev tools (iPhone, iPad, laptop, widescreen).
+
+## Image Upload Setup (Desktop + Mobile)
+
+A straightforward image slot convention is included under `public/site-images/`.
+
+### Folder Pattern
+
+Each page hero has two folders:
+
+- `desktop/` → wide landscape images
+- `mobile/` → vertical portrait images (expected)
+
+Current slots:
+
+- `public/site-images/home-hero/desktop/default.jpg`
+- `public/site-images/home-hero/mobile/default.jpg`
+- `public/site-images/services-hero/desktop/default.jpg`
+- `public/site-images/services-hero/mobile/default.jpg`
+- `public/site-images/gallery-hero/desktop/default.jpg`
+- `public/site-images/gallery-hero/mobile/default.jpg`
+- `public/site-images/contact-hero/desktop/default.jpg`
+- `public/site-images/contact-hero/mobile/default.jpg`
+- `public/site-images/reviews-hero/desktop/default.jpg`
+- `public/site-images/reviews-hero/mobile/default.jpg`
+
+### Replace Process
+
+1. Open the slot folder for the section you want to change.
+2. Replace `default.jpg` in `desktop/` with your desktop image.
+3. Replace `default.jpg` in `mobile/` with a **vertical** mobile image.
+4. Keep the file name as `default.jpg` (no code changes needed).
+5. Refresh the page and test on mobile + desktop viewports.
+
+### Recommended Sizes
+
+- Desktop hero images: `2400 x 1200` (landscape)
+- Mobile hero images: `1080 x 1350` or `1080 x 1440` (portrait)
+
+Slot mappings are defined in `src/lib/site-images.ts`, and rendered with responsive components in `src/components/website/ResponsiveSlotImage.tsx`.
+
 ## Environment
 
 All client-specific values come from `.env.local`.  
